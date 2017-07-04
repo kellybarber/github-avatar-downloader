@@ -7,7 +7,8 @@ var GITHUB_TOKEN = "5285ac698dff71b208dd5a4edde0d46e55e261a4";
 var repoOwner = "jquery";
 var repoName = "jquery";
 
-function getRepoContributors(repoOwner, repoName, cb) {
+
+function getRepoContributors(repoOwner, repoName, callback) {
 
   var requestURL = {
     url: `https://${GITHUB_USER}:${GITHUB_TOKEN}@api.github.com/repos/${repoOwner}/${repoName}/contributors`,
@@ -24,7 +25,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
 
     if (response.statusCode === 200) {
       var json = JSON.parse(body);
-      cb(json);
+      callback(json);
     }
 
   });
@@ -34,11 +35,51 @@ function getRepoContributors(repoOwner, repoName, cb) {
 getRepoContributors("jquery", "jquery",
   function(json) {
     for (prop of json) {
-      console.log(prop['login']);
-      console.log(prop['avatar_url']);
+      downloadImageByURL(prop['avatar_url'], `./avatars/${prop['login']}.jpg`);
     }
   });
 
+function downloadImageByURL(url, filePath) {
+
+  request.get(url)
+         .on('error', function(err) {
+           if (err) {
+            throw err;
+           }
+         })
+         .on('response', function(response) {
+           console.log('Response Status Message: ', response.statusMessage);
+           console.log('Response Status Headers: ', response.headers['content-type']);
+         })
+         .on('end', function() {
+           console.log('downloaded');
+         })
+         .pipe(fs.createWriteStream(filePath));
+
+}
+
+// downloadImageByURL('https://avatars2.githubusercontent.com/u/109334?v=3', './contributorpicks.jpg')
+
+
+
+
+
+
+//Alternative piping function
+
+// request(url, function(err, response, body) {
+//   if (err) {
+//     console.log(`Error fetching: ${url}`, err);
+//     return;
+//   }
+//
+//   if (response.statusCode === 200) {
+//     fs.createWriteStream(filePath).pipe(url);
+//   }
+//
+// });
+
+//Alternative get repo users function
 
 // var contributors = '';
 // var parsedJSON = '';
